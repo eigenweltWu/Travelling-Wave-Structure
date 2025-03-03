@@ -1,0 +1,23 @@
+With Brick
+.Reset
+.Name "strip1"
+.Component "grating1"
+.Material "PEC"
+.Xrange "-lx/2+x_strip-w_strip/2+p_strip*0", "-lx/2+x_strip+w_strip/2+p_strip*0"
+.Yrange "y_strip+(l_max-(l_max-l_min)/(nr_strip-1)*0)/2", "y_strip-(l_max-(l_max-l_min)/(nr_strip-1)*0)/2"
+.Zrange "ts", "ts+tp"
+.Create
+End With
+
+With Brick
+.Reset
+.Name "slot1"
+.Component "grating1"
+.Material "PEC"
+.Xrange "-lx/2+x_strip-w_slot/2+p_strip*0", "-lx/2+x_strip+w_slot/2+p_strip*0"
+.Yrange "y_strip+(ls_max-(ls_max-ls_min)/(nr_strip-1)*0)/2", "y_strip-(ls_max-(ls_max-ls_min)/(nr_strip-1)*0)/2"
+.Zrange "ts", "ts+tp"
+.Create
+End With
+
+Solid.Subtract "grating1:strip1", "grating1:slot1"
