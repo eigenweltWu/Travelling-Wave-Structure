@@ -6,15 +6,40 @@ mws = invoke(cst, 'FileNew');
 grating = [];
 par_list = dictionary('tp','0.035'); % 定义类型为str->str
 %%%---------------------------------------------------------
+%一次性结构的生成请在func_initialization中完成
+%设置参数 可从CST导出后使用read_par_list生成
+par_list('lx')='2*x_port+p_tooth*(nr_strip-1)+w_tooth';
+par_list('ly')='36';
+par_list('ts')='3';
+par_list('tp')='0.035';
+par_list('x_port')='1';
+par_list('w_tooth')='1';
+par_list('l_max')='15';
+par_list('l_min')='8';
 
-%设置参数
-par_list('ts') = 3;
-par_list('lx') = 22;
-par_list('ly') = 16;
-par_list('tp') = 0.035;
-par_list('nr_strip') = 10;
+par_list('x_teeth')='1';
+par_list('y_teeth')='0'; 
+par_list('p_tooth')='2.2';
+par_list('x_teeth2')='x_port+p_tooth/2';
+par_list('p_tooth2')='2.2';
+par_list('w_tooth2')='p_tooth-w_tooth';
+par_list('l_max2')='6';
+par_list('l_min2')='12';
+
+par_list('nr_strip')='10';
+par_list('nr_teeth2')='9';
+
+par_list('y_teeth2')='11.5';
+par_list('x_teeth3')='x_teeth2';
+par_list('p_tooth3')='p_tooth2';
+par_list('w_tooth3')='w_tooth2';
+par_list('y_teeth3')='-y_teeth2';
+par_list('l_max3')='l_max2';
+par_list('l_min3')='l_min2';
+par_list('nr_teeth3')='nr_teeth2';
 %生成周期结构
-func_generate_grating('x',str2num(par_list('nr_strip')),'sample_rectstrip_generation');
+func_generate_grating('x',str2num(par_list('nr_strip')),'slot1');
+func_generate_grating('x',str2num(par_list('nr_teeth2')),'slot2');
 
 % Define Material
 sCommand = '';
@@ -87,42 +112,11 @@ sCommand = func_create_sCommand(sCommand, '.Transparency "%s"', '0');
 sCommand = func_create_sCommand(sCommand, '.Create');
 sCommand = func_create_sCommand(sCommand, 'End With');
 invoke(mws, 'AddToHistory', 'define material: felt', sCommand);
+
+
 %%%============================================================
 
-% Define Parameter
-keys = par_list.keys();
-values = par_list.values();
-for i = 1:length(keys)
-    func_register_par(mws,keys{i},values{i});
-end
-
-% Define substrate and gnd
-sCommand = ['Component.New "component1"'];
-invoke(mws,'AddToHistory', ['new component: component1'], sCommand);
-
-sCommand = 'With Brick';
-sCommand = func_create_sCommand(sCommand, '.Reset');
-sCommand = func_create_sCommand(sCommand, '.Name "%s"', 'substrate');
-sCommand = func_create_sCommand(sCommand, '.Component "%s"', 'component1');
-sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'felt');
-sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"','-lx/2','lx/2');
-sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"','-ly/2','ly/2');
-sCommand = func_create_sCommand(sCommand, '.Zrange "%s","%s"', '0', 'ts');
-sCommand = func_create_sCommand(sCommand, '.Create');
-sCommand = func_create_sCommand(sCommand, 'End With');
-invoke(mws,'AddToHistory', ['define brick: component1:substrate'],sCommand);
-
-sCommand = 'With Brick';
-sCommand = func_create_sCommand(sCommand, '.Reset');
-sCommand = func_create_sCommand(sCommand, '.Name "%s"', 'gnd');
-sCommand = func_create_sCommand(sCommand, '.Component "%s"', 'component1');
-sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'PEC');
-sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"','-lx/2','lx/2');
-sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"','-ly/2','ly/2');
-sCommand = func_create_sCommand(sCommand, '.Zrange "%s","%s"', '-tp', '0');
-sCommand = func_create_sCommand(sCommand, '.Create');
-sCommand = func_create_sCommand(sCommand, 'End With');
-invoke(mws,'AddToHistory', ['define brick: component1:gnd'],sCommand);
+func_initialization(mws,par_list);
 
 for i = 1:length(grating)
     compname = ['grating',num2str(i)];
