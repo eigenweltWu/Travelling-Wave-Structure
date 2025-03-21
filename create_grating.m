@@ -68,7 +68,7 @@ for i = 1:length(grating)
         for xx = 1:str2num(item('nr'))
             for yy = 1:str2double(item('nr'))
                 if ~isempty(item('par'))
-                    feval(item('func'), xx, yy, compname, mws);
+                    feval(item('func'), xx, yy, compname, mws, eval(item('par')));
                 else
                     dtemp = dictionary();
                     feval(item('func'), xx, yy, compname, mws, dtemp);
