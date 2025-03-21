@@ -46,6 +46,12 @@
 
 这样，就得到了完整的对第`i`个单元进行结构生成的代码了。
 
+### 前期准备：提取CST Parameter List
+
+![image](https://github.com/user-attachments/assets/0868ea7c-49cd-4e60-b0c4-27e2ab851f65)
+
+在CST中，右键Parameter List，选择“Save Parameters to File”，将变量表导出到相同文件夹内"partest.txt"中。打开`read_par_list.m`，将首行文件名修改为你的保存文件名（以"partest.txt"）为例。执行脚本，即可将变量表转存为包含“func_register_par”的MATLAB语句。
+
 ### 结构生成
 
 进入`create_grating.m`，首先进行参数设置。这些参数通常是已知并需要广泛使用的，如用于基板尺寸定义的`lx`、`ly`、`tp`等。如果你的单元结构尺寸与总数量有关，还需要先在此定义总数量（如`nr_strip`）。
@@ -58,7 +64,7 @@
 
 完成以上所有工作后，就可以运行`create_grating.m`，将会得到所需的结构。
 
-**需要注意的是，所有CST变量都需要在调用之前进行注册！**
+**需要注意的是，所有CST变量都需要在调用之前进行注册！可以通过在变量名后加“!”，并调用`func_register_par`对已注册的变量值进行修改（示例中已给出）。**
 
 ### 仿真与分析
 
