@@ -1,14 +1,16 @@
-function sample_rectstrip_generation(idx, idy, compname, mws)
+function sample_rectstrip_generation(idx, idy, compname, mws, paras)
 
 % Register Parameters
 % lx,ly,ts,tp,nr_strip should be pre-defined in the main context.
+operation = paras('operation');
 
-func_register_par(mws,'x_strip',3);
-func_register_par(mws,'y_strip',0);
-func_register_par(mws,'p_strip',1.8);
-func_register_par(mws,'w_strip',1.2);
-func_register_par(mws,'l_max',12);
-func_register_par(mws,'l_min',4);
+% End with ! to change existing parameters
+func_register_par(mws,'x_strip!',3);
+func_register_par(mws,'y_strip!',0);
+func_register_par(mws,'p_strip!',1.8);
+func_register_par(mws,'w_strip!',1.2);
+func_register_par(mws,'l_max!',12);
+func_register_par(mws,'l_min!',4); 
 
 
 % Define Rules
@@ -20,43 +22,50 @@ zsmin = 'ts';
 zsmax = 'ts+tp';
 
 
-% First define a strip
-sCommand = 'With Brick';
-sCommand = func_create_sCommand(sCommand, '.Reset');
-sCommand = func_create_sCommand(sCommand, '.Name "%s"', ['strip',num2str(idx)]);
-sCommand = func_create_sCommand(sCommand, '.Component "%s"', compname);
-sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'PEC');
-sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"', xsmin, xsmax);
-sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"', ysmin, ysmax);
-sCommand = func_create_sCommand(sCommand, '.Zrange "%s", "%s"', zsmin, zsmax);
-sCommand = func_create_sCommand(sCommand, '.Create');
-sCommand = func_create_sCommand(sCommand, 'End With');
-invoke(mws, 'AddToHistory', ['define brick: ',compname,':','strip',num2str(idx)], sCommand);
+% if operation is "metal", then define a strip
+if strcmp(operation,"metal")
+    sCommand = 'With Brick';
+    sCommand = func_create_sCommand(sCommand, '.Reset');
+    sCommand = func_create_sCommand(sCommand, '.Name "%s"', ['strip',num2str(idx)]);
+    sCommand = func_create_sCommand(sCommand, '.Component "%s"', compname);
+    sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'PEC');
+    sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"', xsmin, xsmax);
+    sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"', ysmin, ysmax);
+    sCommand = func_create_sCommand(sCommand, '.Zrange "%s", "%s"', zsmin, zsmax);
+    sCommand = func_create_sCommand(sCommand, '.Create');
+    sCommand = func_create_sCommand(sCommand, 'End With');
+    invoke(mws, 'AddToHistory', ['define brick: ',compname,':','strip',num2str(idx)], sCommand);
+end
 
-% You can also define slots to make boolean
-func_register_par(mws,'w_slot','0.75*w_strip'); % it could also be an expression
-func_register_par(mws,'ls_max','0.75*l_max');
-func_register_par(mws,'ls_min','0.75*l_min');
-xcmin = ['-lx/2+x_strip-w_slot/2+p_strip*',num2str(idx-1)];
-xcmax = ['-lx/2+x_strip+w_slot/2+p_strip*',num2str(idx-1)];
-ycmin = ['y_strip+(ls_max-(ls_max-ls_min)/(nr_strip-1)*',num2str(idx-1),')/2'];
-ycmax = ['y_strip-(ls_max-(ls_max-ls_min)/(nr_strip-1)*',num2str(idx-1),')/2'];
+% if operation is "slot", then cut some slots out
+if strcmp(operation,"slot")
+    % You can also define slots to make boolean
+    func_register_par(mws,'w_slot','0.75*w_strip'); % it could also be an expression
+    func_register_par(mws,'ls_max','0.75*l_max');
+    func_register_par(mws,'ls_min','0.75*l_min');
+    xcmin = ['-lx/2+x_strip-w_slot/2+p_strip*',num2str(idx-1)];
+    xcmax = ['-lx/2+x_strip+w_slot/2+p_strip*',num2str(idx-1)];
+    ycmin = ['y_strip+(ls_max-(ls_max-ls_min)/(nr_strip-1)*',num2str(idx-1),')/2'];
+    ycmax = ['y_strip-(ls_max-(ls_max-ls_min)/(nr_strip-1)*',num2str(idx-1),')/2'];
+    
+    sCommand = 'With Brick';
+    sCommand = func_create_sCommand(sCommand, '.Reset');
+    sCommand = func_create_sCommand(sCommand, '.Name "%s"', ['slot',num2str(idx)]);
+    sCommand = func_create_sCommand(sCommand, '.Component "%s"', compname);
+    sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'PEC');
+    sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"', xcmin, xcmax);
+    sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"', ycmin, ycmax);
+    sCommand = func_create_sCommand(sCommand, '.Zrange "%s", "%s"', zsmin, zsmax);
+    sCommand = func_create_sCommand(sCommand, '.Create');
+    sCommand = func_create_sCommand(sCommand, 'End With');
+    invoke(mws, 'AddToHistory', ['define brick: ',compname,':','slot',num2str(idx)], sCommand);
 
-sCommand = 'With Brick';
-sCommand = func_create_sCommand(sCommand, '.Reset');
-sCommand = func_create_sCommand(sCommand, '.Name "%s"', ['slot',num2str(idx)]);
-sCommand = func_create_sCommand(sCommand, '.Component "%s"', compname);
-sCommand = func_create_sCommand(sCommand, '.Material "%s"', 'PEC');
-sCommand = func_create_sCommand(sCommand, '.Xrange "%s", "%s"', xcmin, xcmax);
-sCommand = func_create_sCommand(sCommand, '.Yrange "%s", "%s"', ycmin, ycmax);
-sCommand = func_create_sCommand(sCommand, '.Zrange "%s", "%s"', zsmin, zsmax);
-sCommand = func_create_sCommand(sCommand, '.Create');
-sCommand = func_create_sCommand(sCommand, 'End With');
-invoke(mws, 'AddToHistory', ['define brick: ',compname,':','slot',num2str(idx)], sCommand);
+    metal_compname = paras('metal_compname'); % 注意该类型可能为string，需要转为char进行拼接
+    sCommand = '';
+    sCommand = func_create_sCommand(sCommand, 'Solid.Subtract "%s", "%s"',...
+        [char(metal_compname),':','strip',num2str(idx)],[compname,':','slot',num2str(idx)]);
+    invoke(mws, 'AddToHistory', ['boolean subtract shapes:',...
+        char(metal_compname),':','strip',num2str(idx),', ',compname,':','slot',num2str(idx)], sCommand);
+end
 
-sCommand = '';
-sCommand = func_create_sCommand(sCommand, 'Solid.Subtract "%s", "%s"',...
-    [compname,':','strip',num2str(idx)],[compname,':','slot',num2str(idx)]);
-invoke(mws, 'AddToHistory', ['boolean subtract shapes:',...
-    compname,':','strip',num2str(idx),', ',compname,':','slot',num2str(idx)], sCommand);
 end
